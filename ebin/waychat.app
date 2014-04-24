@@ -1,0 +1,11 @@
+{application,waychat,
+             [{description,"Chat System"},
+              {vsn,"1.0"},
+              {registered,[]},
+              {applications,[kernel,stdlib]},
+              {mod,{waychat_app,[]}},
+              {env,[]},
+              {modules,[waychat_app,waychat_gateway,waychat_gateway_sup,
+                        waychat_room,waychat_room_register,
+                        waychat_room_register_sup,waychat_room_sup,
+                        waychat_sup]}]}.

@@ -1,11 +1,12 @@
 {application, waychat,
  [
-  {description, ""},
-  {vsn, "1"},
+  {description, "Chat System"},
+  {vsn, "1.0"},
   {registered, []},
   {applications, [
                   kernel,
-                  stdlib
+                  stdlib,
+                  mnesia,
                  ]},
   {mod, { waychat_app, []}},
   {env, []}
