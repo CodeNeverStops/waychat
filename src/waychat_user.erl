@@ -93,7 +93,9 @@ user_save(Nickname, Password) ->
 user_get(Nickname) ->
     F = fun() ->
         Query = qlc:q([M || M <- mnesia:table(chat_user), M#chat_user.nickname =:= Nickname]),
-    Results = qlc:e(Query).
+        Results = qlc:e(Query) end,
+    {atomic, Users} = mnesia:transaction(F),
+    Users.
 
 user_session(SessionId) ->
     ok.
