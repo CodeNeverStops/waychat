@@ -55,7 +55,7 @@ handle_call({user_login, Nickname, Password}, _From, State) ->
         User#chat_user.password =:= PasswordMD5 ->
             % generate session id
             {_, Secs, _} = erlang:now(),
-            SessionId = server_util:md5(list_to_binary([Nickname|Secs])),
+            SessionId = server_util:md5(list_to_binary([Nickname|[Secs]])),
             NewState = dict:store(SessionId, Nickname, State),
             {reply, {ok, SessionId}, NewState};
         true ->
@@ -110,9 +110,6 @@ user_save(Nickname, Password) ->
 user_get(Nickname) ->
     F = fun() ->
         Query = qlc:q([M || M <- mnesia:table(chat_user), M#chat_user.nickname =:= Nickname]),
-        Results = qlc:e(Query) end,
+        qlc:e(Query) end,
     {atomic, Users} = mnesia:transaction(F),
     Users.
-
-user_session(SessionId) ->
-    ok.
