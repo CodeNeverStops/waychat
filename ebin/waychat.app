@@ -7,5 +7,5 @@
               {env,[]},
               {modules,[server_util,waychat_app,waychat_gateway,
                         waychat_gateway_sup,waychat_room,
-                        waychat_room_register,waychat_room_register_sup,
-                        waychat_room_sup,waychat_sup,waychat_user]}]}.
+                        waychat_room_register,waychat_room_sup,waychat_sup,
+                        waychat_user]}]}.

@@ -1,9 +1,6 @@
 -module(server_util).
 -compile([export_all]).
 
-encrypt_password(Password) ->
-    ok.
-
 md5(S) ->
     MD5_bin = erlang:md5(S),
     MD5_list = binary_to_list(MD5_bin),

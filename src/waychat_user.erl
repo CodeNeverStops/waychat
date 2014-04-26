@@ -39,20 +39,37 @@ logout(SessionId) ->
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
 
-init(Args) ->
+init(_Args) ->
     init_store(),
-    {ok, Args}.
+    {ok, dict:new()}.
 
 handle_call({user_register, Nickname, Password}, _From, State) ->
-    user_save(Nickname, Password),
+    PasswordMD5 = server_util:md5(Password),
+    user_save(Nickname, PasswordMD5),
     {reply, ok, State};
 
 handle_call({user_login, Nickname, Password}, _From, State) ->
     User = user_get(Nickname),
-    {reply, ok, State};
+    PasswordMD5 = server_util:md5(Password),
+    if 
+        User#chat_user.password =:= PasswordMD5 ->
+            % generate session id
+            {_, Secs, _} = erlang:now(),
+            SessionId = server_util:md5(list_to_binary([Nickname|Secs])),
+            NewState = dict:store(SessionId, Nickname, State),
+            {reply, {ok, SessionId}, NewState};
+        true ->
+            {reply, {error, user_not_found}, State}
+    end;
 
 handle_call({user_logout, SessionId}, _From, State) ->
-    {reply, ok, State};
+    case dict:find(SessionId, State) of
+        {ok, _} ->
+            NewState = dict:erase(SessionId, State),
+            {reply, ok, NewState};
+        error ->
+            {reply, {error, user_not_online}, State}
+    end;
 
 handle_call(stop, _From, State) ->
     mnesia:stop(),
