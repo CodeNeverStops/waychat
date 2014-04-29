@@ -22,6 +22,23 @@
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
+user_register() ->
+    ok.
+
+user_login() ->
+    ok.
+
+user_logout() ->
+    ok.
+
+send_message() ->
+    ok.
+
+create_room() ->
+    ok.
+
+
+
 %% ------------------------------------------------------------------
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
