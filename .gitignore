@@ -2,3 +2,5 @@ deps
 ebin
 src/*.beam
 .rebar
+erl_crash.dump
+Mnesia*/*
