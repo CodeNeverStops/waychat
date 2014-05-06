@@ -1,12 +1,13 @@
 -module(waychat_gateway).
 -behaviour(gen_server).
 -define(SERVER, ?MODULE).
+-record(state, {lsock, sock, ip}).
 
 %% ------------------------------------------------------------------
 %% API Function Exports
 %% ------------------------------------------------------------------
 
--export([start_link/0]).
+-export([start_link/1]).
 
 %% ------------------------------------------------------------------
 %% gen_server Function Exports
@@ -19,8 +20,8 @@
 %% API Function Definitions
 %% ------------------------------------------------------------------
 
-start_link() ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+start_link(LSock) ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [LSock], []).
 
 user_register() ->
     ok.
@@ -38,13 +39,13 @@ create_room() ->
     ok.
 
 
-
 %% ------------------------------------------------------------------
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
 
-init(Args) ->
-    {ok, Args}.
+init([LSock]) ->
+    inet:setopts(LSock, [{active, once}, {packet, 2}, binary]),
+    {ok, #state{lsock = LSock}, 0}.
 
 handle_call(_Request, _From, State) ->
     {reply, ok, State}.
@@ -52,10 +53,25 @@ handle_call(_Request, _From, State) ->
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
+handle_info({tcp, Sock, Data}, State) ->
+    inet:setopts(Sock, [{active, once}]),
+    ok = gen_tcp:send(Sock, <<"Echo back : ", Data/binary>>),
+    {noreply, State};
+
+handle_info({tcp_closed, Sock}, State) ->
+    {stop, normal, State};
+
+handle_info(timeout, #state{lsock = LSock} = State) ->
+    {ok, Sock} = gen_tcp:accept(LSock),
+    {ok, {IP, _Port}} = inet:peername(Sock),
+    waychat_gateway_sup:start_child(),
+    {noreply, State#state{sock=Sock, ip=IP}};
+
 handle_info(_Info, State) ->
     {noreply, State}.
 
-terminate(_Reason, _State) ->
+terminate(_Reason, #state{sock=Sock} = State) ->
+    (catch gen_tcp:close(Sock)),
     ok.
 
 code_change(_OldVsn, State, _Extra) ->
