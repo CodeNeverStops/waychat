@@ -13,6 +13,7 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
+    io:format("waychat_app start. start_type:~p,start_args:~p", [_StartType, _StartArgs]),
     Opts = [binary, {packet, 2}, {reuseaddr, true},
         {keepalive, true}, {backlog, 30}, {active, false}],
     ListenPort = get_app_env(listen_port, ?PORT),

@@ -16,6 +16,7 @@
 %% ===================================================================
 
 start_link(LSock) ->
+    io:format("waychat_sup start_link. Listen socket : ~p", [LSock]),
     supervisor:start_link({local, ?MODULE}, ?MODULE, [LSock]).
 
 %% ===================================================================
@@ -23,6 +24,7 @@ start_link(LSock) ->
 %% ===================================================================
 
 init([LSock]) ->
+    io:format("waychat_sup init."),
     GatewaySup = ?CHILD(waychat_gateway_sup, supervisor, infinity, [LSock]),
     RoomSup  = ?CHILD(waychat_room_sup, supervisor, infinity, []),
     RoomRegisterServer = ?CHILD(waychat_room_register, worker, 5000, []),

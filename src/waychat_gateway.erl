@@ -21,6 +21,7 @@
 %% ------------------------------------------------------------------
 
 start_link(LSock) ->
+    io:format("gateway start_link, Listen socket:~p", [LSock]),
     gen_server:start_link({local, ?SERVER}, ?MODULE, [LSock], []).
 
 user_register() ->
@@ -44,6 +45,7 @@ create_room() ->
 %% ------------------------------------------------------------------
 
 init([LSock]) ->
+    io:format("gateway init, Listen socket:~p", [LSock]),
     inet:setopts(LSock, [{active, once}, {packet, 2}, binary]),
     {ok, #state{lsock = LSock}, 0}.
 
@@ -54,14 +56,17 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 handle_info({tcp, Sock, Data}, State) ->
+    io:format("gateway handle_info, data:~p", [Data]),
     inet:setopts(Sock, [{active, once}]),
     ok = gen_tcp:send(Sock, <<"Echo back : ", Data/binary>>),
     {noreply, State};
 
 handle_info({tcp_closed, Sock}, State) ->
+    io:format("gateway handle_info, tcp_closed"),
     {stop, normal, State};
 
 handle_info(timeout, #state{lsock = LSock} = State) ->
+    io:format("gateway handle_info, timeout"),
     {ok, Sock} = gen_tcp:accept(LSock),
     {ok, {IP, _Port}} = inet:peername(Sock),
     waychat_gateway_sup:start_child(),

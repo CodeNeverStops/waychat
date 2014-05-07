@@ -16,9 +16,11 @@
 %% ===================================================================
 
 start_link(LSock) ->
+    io:format("gateway_sup start_link, Listen socket:~p", [LSock]),
     supervisor:start_link({local, ?MODULE}, ?MODULE, [LSock]).
 
 start_child() ->
+    io:format("gateway_sup start_child"),
     supervisor:start_child(?MODULE, []).
 
 %% ===================================================================
