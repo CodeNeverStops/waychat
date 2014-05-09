@@ -13,10 +13,11 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    io:format("waychat_app start. start_type:~p,start_args:~p", [_StartType, _StartArgs]),
+    io:format("waychat_app start. start_type:~p,start_args:~p~n", [_StartType, _StartArgs]),
     Opts = [binary, {packet, 2}, {reuseaddr, true},
         {keepalive, true}, {backlog, 30}, {active, false}],
     ListenPort = get_app_env(listen_port, ?PORT),
+    io:format("waychat_app listen start~n"),
     {ok, LSock} = gen_tcp:listen(ListenPort, Opts),
     case waychat_sup:start_link(LSock) of
         {ok, Pid} ->

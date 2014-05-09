@@ -16,11 +16,11 @@
 %% ===================================================================
 
 start_link(LSock) ->
-    io:format("gateway_sup start_link, Listen socket:~p", [LSock]),
+    io:format("gateway_sup start_link~n"),
     supervisor:start_link({local, ?MODULE}, ?MODULE, [LSock]).
 
 start_child() ->
-    io:format("gateway_sup start_child"),
+    io:format("gateway_sup start_child~n"),
     supervisor:start_child(?MODULE, []).
 
 %% ===================================================================
@@ -28,7 +28,8 @@ start_child() ->
 %% ===================================================================
 
 init([LSock]) ->
-    GatewayServer = {waychat_gateway, {waychat_gateway, start_link, [LSock]}, permanent, 5000, worker, [waychat_gateway]},
+    io:format("gateway_sup init~n"),
+    GatewayServer = {waychat_gateway, {waychat_gateway, start_link, [LSock]}, temporary, 5000, worker, [waychat_gateway]},
     Children = [GatewayServer],
     RestartStrategy = {simple_one_for_one, 0, 1},
     {ok, {RestartStrategy, Children}}.

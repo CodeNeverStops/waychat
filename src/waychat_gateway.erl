@@ -1,6 +1,5 @@
 -module(waychat_gateway).
 -behaviour(gen_server).
--define(SERVER, ?MODULE).
 -record(state, {lsock, sock, ip}).
 
 %% ------------------------------------------------------------------
@@ -21,8 +20,10 @@
 %% ------------------------------------------------------------------
 
 start_link(LSock) ->
-    io:format("gateway start_link, Listen socket:~p", [LSock]),
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [LSock], []).
+    io:format("gateway start_link, Listen socket:~p~n", [LSock]),
+    % 由于这里是simple_one_for_one，所以不能用{local, ServerName}来注册，
+    % 多个同名进程会有冲突，导致start_link失败
+    gen_server:start_link(?MODULE, [LSock], []).
 
 user_register() ->
     ok.
@@ -45,8 +46,8 @@ create_room() ->
 %% ------------------------------------------------------------------
 
 init([LSock]) ->
-    io:format("gateway init, Listen socket:~p", [LSock]),
     inet:setopts(LSock, [{active, once}, {packet, 2}, binary]),
+    io:format("gateway init~n"),
     {ok, #state{lsock = LSock}, 0}.
 
 handle_call(_Request, _From, State) ->
@@ -56,26 +57,27 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 handle_info({tcp, Sock, Data}, State) ->
-    io:format("gateway handle_info, data:~p", [Data]),
     inet:setopts(Sock, [{active, once}]),
+    io:format("gateway send back data:~p~n", [Data]),
     ok = gen_tcp:send(Sock, <<"Echo back : ", Data/binary>>),
     {noreply, State};
 
-handle_info({tcp_closed, Sock}, State) ->
-    io:format("gateway handle_info, tcp_closed"),
+handle_info({tcp_closed, _Sock}, State) ->
+    io:format("gateway tcp_closed~n"),
     {stop, normal, State};
 
 handle_info(timeout, #state{lsock = LSock} = State) ->
-    io:format("gateway handle_info, timeout"),
+    io:format("gateway accept start~n"),
     {ok, Sock} = gen_tcp:accept(LSock),
-    {ok, {IP, _Port}} = inet:peername(Sock),
+    io:format("gateway accept end~n"),
     waychat_gateway_sup:start_child(),
+    {ok, {IP, _Port}} = inet:peername(Sock),
     {noreply, State#state{sock=Sock, ip=IP}};
 
 handle_info(_Info, State) ->
     {noreply, State}.
 
-terminate(_Reason, #state{sock=Sock} = State) ->
+terminate(_Reason, #state{sock=Sock} = _State) ->
     (catch gen_tcp:close(Sock)),
     ok.
 
