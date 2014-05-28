@@ -6,7 +6,6 @@
   {applications, [
                   kernel,
                   stdlib,
-                  ranch,
                   mnesia
                  ]},
   {mod, { waychat_app, []}},
